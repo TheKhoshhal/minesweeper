@@ -1,2 +1,2 @@
 minesweeper: minesweeper.c
-	cc -Wall -Wextra -o build/minesweeper minesweeper.c -lncurses
+	cc -Wall -Wextra -g -o build/minesweeper-debug minesweeper.c -lncurses

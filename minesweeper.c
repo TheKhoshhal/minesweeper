@@ -29,7 +29,6 @@ void initCurses() {
   keypad(stdscr, TRUE);
 }
 
-
 bool position_exists(int bomb_count, Position *bombs, Position pos) {
   for (int i = 0; i < bomb_count; i++) {
     if (bombs[i].x == pos.x && bombs[i].y == pos.y) {
@@ -42,10 +41,10 @@ bool position_exists(int bomb_count, Position *bombs, Position pos) {
 void placeBombs(int bomb_count, Position *bombs, int height, int width) {
   srand(time(NULL));
 
-  for (int i = 0; i < bomb_count; ) {
+  for (int i = 0; i < bomb_count;) {
     Position temp_pos;
-    temp_pos.x = (rand() % height) + 1;
-    temp_pos.y = (rand() % width) + 1;
+    temp_pos.y = (rand() % height) + 1;
+    temp_pos.x = (rand() % width) + 1;
 
     if (!position_exists(i, bombs, temp_pos)) {
       bombs[i] = temp_pos;
@@ -107,7 +106,8 @@ WinArg getArgs(int argc, char *argv[]) {
   return winarg;
 }
 
-WINDOW *initGame(int height, int width, int starty, int startx, int bomb_num, Position *bombs) {
+WINDOW *initGame(int height, int width, int starty, int startx, int bomb_num,
+                 Position *bombs) {
   WINDOW *game_win;
   char exitmsg[] = "Press q to exit";
   mvprintw(0, COLS - sizeof(exitmsg), "%s", exitmsg);
@@ -146,38 +146,40 @@ int main(int argc, char *argv[]) {
 
   Position bombs[winarg.bomb_num];
 
-
-
-  WINDOW *game_win =
-      initGame(winarg.height, winarg.width, starty, startx, winarg.bomb_num, bombs);
+  WINDOW *game_win = initGame(winarg.height, winarg.width, starty, startx,
+                              winarg.bomb_num, bombs);
   wmove(game_win, cursor.y, cursor.x);
   wrefresh(game_win);
 
-  mvprintw(4, 0, "%d %d", bombs[0].x, bombs[0].y);
+  // mvprintw(4, 0, "%02d %02d", bombs[0].x, bombs[0].y);
 
   int ch;
   int temp;
-  while ((ch = getch()) != 'q' && !gameOver) {
+  while (!gameOver && (ch = getch()) != 'q') {
     switch (ch) {
     case KEY_UP:
+    case 'k':
       if (cursor.y > 1) {
         temp = cursor.y;
         cursor.y = --temp;
       }
       break;
     case KEY_DOWN:
+    case 'j':
       if (cursor.y < winarg.height) {
         temp = cursor.y;
         cursor.y = ++temp;
       }
       break;
     case KEY_LEFT:
+    case 'h':
       if (cursor.x > 1) {
         temp = cursor.x;
         cursor.x = --temp;
       }
       break;
     case KEY_RIGHT:
+    case 'l':
       if (cursor.x < winarg.width) {
         temp = cursor.x;
         cursor.x = ++temp;
@@ -186,6 +188,13 @@ int main(int argc, char *argv[]) {
     case 'f':
       break;
     case 'b':
+      for (int i = 0; i < winarg.bomb_num; i++) {
+        if (bombs[i].x == cursor.x && bombs[i].y == cursor.y) {
+          mvwprintw(game_win, cursor.y, cursor.x, "B");
+          sleep(2);
+          gameOver = 1;
+        }
+      }
       break;
     }
 
